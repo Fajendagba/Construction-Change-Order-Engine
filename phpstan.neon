@@ -1,0 +1,10 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+
+parameters:
+    paths:
+        - app/
+    level: 8
+    excludePaths:
+        - app/Domain/*/Contracts/*
