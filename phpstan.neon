@@ -8,3 +8,8 @@ parameters:
     level: 8
     excludePaths:
         - app/Domain/*/Contracts/*
+    ignoreErrors:
+        -
+            identifier: staticMethod.dynamicCall
+            paths:
+                - app/Infrastructure/Repositories/
