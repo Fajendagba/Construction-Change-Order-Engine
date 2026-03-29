@@ -12,7 +12,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property ChangeOrderState          $state
+ * @property Carbon|null               $state_changed_at
+ * @property Carbon|null               $reviewed_at
+ */
 final class ChangeOrder extends Model
 {
     use HasUlids;

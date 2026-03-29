@@ -9,7 +9,19 @@ parameters:
     excludePaths:
         - app/Domain/*/Contracts/*
     ignoreErrors:
+        # Larastan annotates Eloquent Builder methods and some Request methods as @method static
+        # on their classes for IDE autocomplete. phpstan-strict-rules then flags calling them on
+        # instances. This is a known Larastan + strict-rules compatibility issue.
         -
             identifier: staticMethod.dynamicCall
             paths:
                 - app/Infrastructure/Repositories/
+                - app/Application/
+
+        # Larastan resolves decimal:2 cast properties as float. The explicit (float) casts in
+        # resources are intentional to guarantee float serialization at runtime, since Eloquent
+        # returns decimal columns as strings in PHP. PHPStan sees them as already-float.
+        -
+            identifier: cast.useless
+            paths:
+                - app/Application/Http/Resources/
