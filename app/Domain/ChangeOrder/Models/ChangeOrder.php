@@ -8,7 +8,9 @@ use App\Domain\AuditLog\Models\AuditLog;
 use App\Domain\ChangeOrder\Enums\ChangeOrderState;
 use App\Domain\ProjectBudget\Models\Project;
 use App\Models\User;
+use Database\Factories\ChangeOrderFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,7 +23,14 @@ use Illuminate\Support\Carbon;
  */
 final class ChangeOrder extends Model
 {
+    /** @use HasFactory<ChangeOrderFactory> */
+    use HasFactory;
     use HasUlids;
+
+    protected static function newFactory(): ChangeOrderFactory
+    {
+        return ChangeOrderFactory::new();
+    }
 
     protected $table = 'change_orders';
 

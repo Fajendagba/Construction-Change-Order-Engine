@@ -19,7 +19,7 @@ final class TransitionChangeOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'target_state'     => ['required', 'string', 'in:submitted,under_review,approved,rejected'],
+            'target_state'     => ['required', 'string', 'in:draft,submitted,under_review,approved,rejected'],
             'rejection_reason' => ['required_if:target_state,rejected', 'nullable', 'string'],
         ];
     }

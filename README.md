@@ -1,66 +1,192 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Construction Change Order Engine
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A DDD-structured Laravel API for managing construction change orders with event-driven budget recalculation, built to demonstrate engineering standards.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **PHP 8.3** — strict types, readonly properties, enums, match expressions
+- **Laravel 11** — framework for routing, auth, queues, broadcasting
+- **PostgreSQL** — primary database with JSONB for audit metadata
+- **Laravel Sanctum** — token-based API authentication
+- **Laravel Horizon** — queue management and monitoring
+- **Laravel Reverb** — WebSocket server for real-time updates
+- **PHPUnit** — feature and unit test suite
+- **PHPStan Level 8** — strictest static analysis
+- **PHPCS PSR-12** — code style enforcement
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Architecture Overview
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+This project follows **Domain-Driven Design (DDD)** with a modular monolith structure. The key principle is that business logic is completely decoupled from the framework.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```
+app/
+├── Domain/          # Pure PHP — zero Laravel imports
+│   ├── ChangeOrder/
+│   │   ├── Contracts/   # Repository interfaces
+│   │   ├── Enums/       # State machine (ChangeOrderState)
+│   │   ├── Events/      # Domain events (plain PHP value objects)
+│   │   ├── Exceptions/  # Domain exceptions
+│   │   ├── Models/      # Eloquent models (framework-dependent, kept close to domain)
+│   │   └── Services/    # Business logic (ChangeOrderService)
+│   ├── ProjectBudget/
+│   │   ├── Contracts/   # Repository interfaces
+│   │   ├── Models/      # Project, BudgetLineItem
+│   │   └── Services/    # BudgetRecalculationService
+│   ├── AuditLog/
+│   │   └── Models/      # AuditLog (immutable, no updated_at)
+│   └── Shared/
+│       └── Enums/       # UserRole (shared across domains)
+├── Infrastructure/  # Laravel-specific implementations
+│   ├── Events/      # Broadcast events (ShouldBroadcast)
+│   ├── Listeners/   # Queued event listeners
+│   ├── Providers/   # DomainServiceProvider (binds interfaces)
+│   └── Repositories/ # Eloquent repository implementations
+└── Application/     # HTTP layer
+    └── Http/
+        ├── Controllers/Api/
+        ├── Requests/
+        ├── Resources/
+        └── Policies/
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Setup
 
-## Laravel Sponsors
+### Prerequisites
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- PHP 8.3
+- Composer
+- PostgreSQL 17
+- Redis (for queues)
+- Node.js (for Reverb, optional for backend-only testing)
 
-### Premium Partners
+### Installation
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```bash
+git clone https://github.com/Fajendagba/Construction-Change-Order-Engine.git
+cd change-order-backend
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-## Contributing
+### Configure Environment
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Update `.env`:
 
-## Code of Conduct
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=ingenious_change_order
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+BROADCAST_CONNECTION=reverb
+QUEUE_CONNECTION=redis
 
-## Security Vulnerabilities
+REVERB_APP_ID=ingenious-local
+REVERB_APP_KEY=local-key
+REVERB_APP_SECRET=local-secret
+REVERB_HOST=localhost
+REVERB_PORT=8080
+REVERB_SCHEME=http
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Database Setup
 
-## License
+```bash
+createdb ingenious_change_order
+php artisan migrate
+php artisan db:seed
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Running the Application
+
+You need three terminal tabs running simultaneously:
+
+```bash
+php artisan serve
+
+php artisan queue:work
+
+php artisan reverb:start
+```
+
+---
+
+## Running Tests
+
+```bash
+# Full test suite
+php artisan test
+
+# Feature tests only
+php artisan test --filter "Feature"
+
+# Unit tests only
+php artisan test --filter "Unit"
+```
+
+---
+
+## Static Analysis
+
+```bash
+# PHPStan Level 8
+./vendor/bin/phpstan analyse
+
+# PHPCS PSR-12
+./vendor/bin/phpcs
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description | Required Role |
+|--------|----------|-------------|---------------|
+| POST | `/api/login` | Authenticate and receive token | Public |
+| GET | `/api/me` | Get authenticated user | Any |
+| GET | `/api/projects` | List all projects | Any |
+| GET | `/api/projects/{id}` | Get project with budget | Any |
+| GET | `/api/projects/{id}/change-orders` | List change orders | Any |
+| POST | `/api/projects/{id}/change-orders` | Create change order | Contractor |
+| GET | `/api/projects/{id}/change-orders/{id}` | Get change order with audit logs | Any |
+| PATCH | `/api/projects/{id}/change-orders/{id}/transition` | Transition state | Role-dependent |
+| GET | `/api/projects/{id}/change-orders/{id}/audit-logs` | Get audit trail | Any |
+
+### State Transition Rules
+
+| From State | To State | Required Role |
+|------------|----------|---------------|
+| Draft | Submitted | Contractor |
+| Submitted | Under Review | Owner |
+| Under Review | Approved | Owner |
+| Under Review | Rejected | Owner |
+| Rejected | Draft | Contractor |
+
+---
+
+## Demo Credentials
+
+After running `php artisan db:seed`:
+
+| Name | Email | Password | Role |
+|------|-------|----------|------|
+| Sarah Mitchell | owner@ingenious.build | password | Owner |
+| Mike Rodriguez | contractor@ingenious.build | password | Contractor |
+| Emily Chen | architect@ingenious.build | password | Architect |
+
+---
+
+## Queue Priority
+
+Background jobs are processed in priority order:
+
+1. `budget-updates` — financial data, highest priority
+2. `audit` — audit log writes, medium priority
+3. `notifications` — WebSocket broadcasts, lowest priority

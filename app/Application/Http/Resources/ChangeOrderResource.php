@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Http\Resources;
 
+use App\Application\Http\Resources\AuditLogResource;
 use App\Domain\ChangeOrder\Models\ChangeOrder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -35,6 +36,7 @@ final class ChangeOrderResource extends JsonResource
             'reviewed_by'      => $this->whenLoaded('reviewedBy', fn () => $changeOrder->reviewedBy !== null
                 ? ['id' => $changeOrder->reviewedBy->id, 'name' => $changeOrder->reviewedBy->name]
                 : null),
+            'audit_logs'       => $this->whenLoaded('auditLogs', fn () => AuditLogResource::collection($changeOrder->auditLogs)),
             'rejection_reason' => $changeOrder->rejection_reason,
             'state_changed_at' => $changeOrder->state_changed_at?->toIso8601String(),
             'created_at'       => $changeOrder->created_at?->toIso8601String(),

@@ -18,7 +18,7 @@ final class ChangeOrderPolicy
     public function transition(User $user, ChangeOrder $changeOrder, string $targetState): bool
     {
         return match ($user->role) {
-            UserRole::CONTRACTOR => $targetState === 'submitted',
+            UserRole::CONTRACTOR => in_array($targetState, ['submitted', 'draft'], strict: true),
             UserRole::OWNER      => in_array($targetState, ['under_review', 'approved', 'rejected'], strict: true),
             default              => false,
         };
