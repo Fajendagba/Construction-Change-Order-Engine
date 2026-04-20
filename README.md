@@ -177,9 +177,9 @@ After running `php artisan db:seed`:
 
 | Name | Email | Password | Role |
 |------|-------|----------|------|
-| Sarah Mitchell | owner@ingenious.build | password | Owner |
-| Mike Rodriguez | contractor@ingenious.build | password | Contractor |
-| Emily Chen | architect@ingenious.build | password | Architect |
+| Nick Carter | owner@ingenious.build | password | Owner |
+| Michał Sączek | contractor@ingenious.build | password | Contractor |
+| Eli Rattner | architect@ingenious.build | password | Architect |
 
 ---
 

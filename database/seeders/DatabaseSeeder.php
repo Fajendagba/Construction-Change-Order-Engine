@@ -18,19 +18,19 @@ final class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $owner = User::factory()->owner()->create([
-            'name'     => 'Sarah Mitchell',
+            'name'     => 'Nick Carter',
             'email'    => 'owner@ingenious.build',
             'password' => Hash::make('password'),
         ]);
 
         $contractor = User::factory()->contractor()->create([
-            'name'     => 'Mike Rodriguez',
+            'name'     => 'Michał Sączek',
             'email'    => 'contractor@ingenious.build',
             'password' => Hash::make('password'),
         ]);
 
         User::factory()->architect()->create([
-            'name'     => 'Emily Chen',
+            'name'     => 'Eli Rattner',
             'email'    => 'architect@ingenious.build',
             'password' => Hash::make('password'),
         ]);
