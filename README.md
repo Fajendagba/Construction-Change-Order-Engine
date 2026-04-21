@@ -109,10 +109,13 @@ php artisan db:seed
 You need three terminal tabs running simultaneously:
 
 ```bash
+# Tab 1 — API server
 php artisan serve
 
-php artisan queue:work
+# Tab 2 — Queue worker (must listen on all three named queues)
+php artisan queue:work --queue=budget-updates,audit,notifications,default
 
+# Tab 3 — WebSocket server
 php artisan reverb:start
 ```
 
@@ -156,6 +159,7 @@ php artisan test --filter "Unit"
 | GET | `/api/projects/{id}/change-orders` | List change orders | Any |
 | POST | `/api/projects/{id}/change-orders` | Create change order | Contractor |
 | GET | `/api/projects/{id}/change-orders/{id}` | Get change order with audit logs | Any |
+| PATCH | `/api/projects/{id}/change-orders/{id}` | Edit change order (Draft only) | Contractor (submitter) |
 | PATCH | `/api/projects/{id}/change-orders/{id}/transition` | Transition state | Role-dependent |
 | GET | `/api/projects/{id}/change-orders/{id}/audit-logs` | Get audit trail | Any |
 
