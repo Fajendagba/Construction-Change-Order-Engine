@@ -6,6 +6,7 @@ namespace App\Application\Http\Controllers\Api;
 
 use App\Application\Http\Requests\StoreChangeOrderRequest;
 use App\Application\Http\Requests\TransitionChangeOrderRequest;
+use App\Application\Http\Requests\UpdateChangeOrderRequest;
 use App\Application\Http\Resources\ChangeOrderResource;
 use App\Domain\ChangeOrder\Enums\ChangeOrderState;
 use App\Domain\ChangeOrder\Exceptions\InvalidStateTransitionException;
@@ -48,6 +49,28 @@ final class ChangeOrderController extends Controller
         return (new ChangeOrderResource($changeOrder))
             ->response()
             ->setStatusCode(201);
+    }
+
+    public function update(
+        UpdateChangeOrderRequest $request,
+        string $projectId,
+        string $changeOrderId,
+    ): JsonResponse {
+        $changeOrder = ChangeOrder::with(['submittedBy', 'reviewedBy'])
+            ->where('project_id', $projectId)
+            ->findOrFail($changeOrderId);
+
+        $this->authorize('edit', $changeOrder);
+
+        try {
+            $this->changeOrderService->update($changeOrderId, $request->validated());
+        } catch (InvalidStateTransitionException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        $changeOrder->refresh();
+
+        return (new ChangeOrderResource($changeOrder))->response();
     }
 
     public function show(string $projectId, string $changeOrderId): JsonResponse

@@ -124,4 +124,58 @@ final class ChangeOrderService
 
         return ['changeOrder' => $changeOrder, 'event' => $event];
     }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function update(string $changeOrderId, array $data): object
+    {
+        $changeOrder = $this->changeOrderRepository->findById($changeOrderId);
+
+        if ($changeOrder === null) {
+            throw new \InvalidArgumentException(
+                "Change order {$changeOrderId} not found."
+            );
+        }
+
+        /** @var \stdClass $changeOrder */
+
+        /** @var string|ChangeOrderState $rawState */
+        $rawState     = $changeOrder->state;
+        $currentState = $rawState instanceof ChangeOrderState
+            ? $rawState
+            : ChangeOrderState::from($rawState);
+
+        if ($currentState !== ChangeOrderState::DRAFT) {
+            throw new InvalidStateTransitionException($currentState, ChangeOrderState::DRAFT);
+        }
+
+        if (array_key_exists('title', $data)) {
+            $changeOrder->title = (string) $data['title'];
+        }
+
+        if (array_key_exists('description', $data)) {
+            $changeOrder->description = (string) $data['description'];
+        }
+
+        if (array_key_exists('reason', $data)) {
+            $changeOrder->reason = (string) $data['reason'];
+        }
+
+        if (array_key_exists('cost_code', $data)) {
+            $changeOrder->cost_code = (string) $data['cost_code'];
+        }
+
+        if (array_key_exists('labor_cost', $data) || array_key_exists('material_cost', $data)) {
+            $laborCost              = (float) ($data['labor_cost'] ?? $changeOrder->labor_cost);
+            $materialCost           = (float) ($data['material_cost'] ?? $changeOrder->material_cost);
+            $changeOrder->labor_cost    = $laborCost;
+            $changeOrder->material_cost = $materialCost;
+            $changeOrder->total_cost    = $laborCost + $materialCost;
+        }
+
+        $this->changeOrderRepository->save($changeOrder);
+
+        return $changeOrder;
+    }
 }

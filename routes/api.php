@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/projects/{project}/change-orders', [ChangeOrderController::class, 'index']);
     Route::post('/projects/{project}/change-orders', [ChangeOrderController::class, 'store']);
     Route::get('/projects/{project}/change-orders/{changeOrder}', [ChangeOrderController::class, 'show']);
+    Route::patch('/projects/{project}/change-orders/{changeOrder}', [ChangeOrderController::class, 'update']);
     Route::patch('/projects/{project}/change-orders/{changeOrder}/transition', [ChangeOrderController::class, 'transition']);
 
     Route::get('/projects/{project}/change-orders/{changeOrder}/audit-logs', [AuditLogController::class, 'index']);
